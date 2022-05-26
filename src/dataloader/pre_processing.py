@@ -2,7 +2,6 @@ from sklearn.preprocessing import OneHotEncoder
 
 
 class PreProcess:
-
     def __init__(self, data):
         self.data = data
 
@@ -17,4 +16,3 @@ class PreProcess:
 
     def split_data(self, method):
         pass
-
