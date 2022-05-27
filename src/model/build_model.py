@@ -22,7 +22,6 @@ class BuildModel:
             "grads": self.grads,
         }
 
-    @staticmethod
     def initialize_weights(self):
         weights = np.random.randn(self.n_features, 1)
         return weights
