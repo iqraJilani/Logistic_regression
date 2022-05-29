@@ -18,7 +18,8 @@ class RegressionPipeline:
     def pre_processing(self, transformations):
         loader = Loader(self.path, self.name, self.target)
         loader.pre_process(transformations)
-        self.X_train, self.X_test, self.y_train, self.y_test = loader.split_data()
+        self.X_train, self.X_test, self.y_train, self.y_test = loader.split_data("default")
+        print(self.X_train.shape)
 
     def train_model(self, learning_rate, num_iter):
         self.model_obj.set_data(learning_rate, self.X_train, self.y_train)

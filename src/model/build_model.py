@@ -28,7 +28,7 @@ class BuildModel:
     def get_data(self):
         return tuple(self.weights, self.bias, self.leaning_rate)
 
-    model_data = property(set_data(), get_data())
+    model_data = property(set_data, get_data)
 
     @staticmethod
     def initialize_weights(n_features):
@@ -50,13 +50,15 @@ class BuildModel:
         return predictions
 
     def predict(self, ):
-        self.n_examples = self.data.shape[0]
         activations = np.dot(self.data, self.weights)
         probabilities = BuildModel.custom_sigmoid(activations)
         predictions = BuildModel.custom_softmax(probabilities)
         self.predictions = predictions
+        print("predictions shape", self.predictions.shape)
+        return self
 
     def compute_cost(self):
+        print("Target shape")
         epsilon = 1e-5
         cost = np.sum(
             (self.target * np.log(self.predictions + epsilon))

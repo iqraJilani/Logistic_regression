@@ -1,4 +1,4 @@
-from pre_processing import PreProcess
+from .pre_processing import PreProcess
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
@@ -7,11 +7,11 @@ from sklearn.model_selection import train_test_split
 class Loader:
     def __init__(self, path, file_name, target):
         self.data = pd.read_csv(os.path.join(path, file_name))
-        self.target = self.data.loc[:, target]
+        self.target = self.data[target]
 
-    def pre_process(self, **methods):
+    def pre_process(self, methods):
         pre_obj = PreProcess(self.data)
-        for transformation, cols, method in methods.items():
+        for transformation, cols in methods.items():
             pre_obj.fit_transform(transformation, cols)
 
         self.data = pre_obj.data

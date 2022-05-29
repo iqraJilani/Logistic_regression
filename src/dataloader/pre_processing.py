@@ -16,14 +16,10 @@ class PreProcess:
             "label_encoder": LabelEncoder(),
             "one_hot_encoder": OneHotEncoder(),
             "min_max_scaler": MinMaxScaler(),
-            "standard_scaler": StandardScaler(),
+            "standard_scaler": self.standard_scaler,
             "power_transformer": PowerTransformer()
         }
 
-    def get_data(self):
-        return self.data
-
-    data = property(get_data())
 
     def fix_skew(self, target, cols):
         skew_feats = self.data.drop(target, axis=1).skew().sort_values(ascending=False)
@@ -42,8 +38,11 @@ class PreProcess:
         self.data[cols] = scaled_cols
 
     def standard_scaler(self, cols):
-        self.transformers["standard_scaler"].fit(self.data[cols].values)
-        scaled_cols = self.transformers["standard_scaler"].transform(self.data[cols].values)
+        scaler = StandardScaler()
+        scaler.fit(self.data[cols].values)
+        scaled_cols = scaler.transform(self.data[cols].values)
+        # self.transformers["standard_scaler"].fit(self.data[cols].values)
+        # scaled_cols = self.transformers["standard_scaler"].transform(self.data[cols].values)
         self.data[cols] = scaled_cols
 
     def label_encode(self, cols):
@@ -53,6 +52,6 @@ class PreProcess:
         # self.data[cols] = self.data[cols].apply(lambda col: self.transformers["one_hot_encoder"].fit_transform(col))
         self.data = pd.get_dummies(self.data, columns=cols)
 
-    @staticmethod
-    def fit_transform(transformation, cols):
-        transformation(cols)
+
+    def fit_transform(self, transformation, cols):
+        self.transformers[transformation](cols)
