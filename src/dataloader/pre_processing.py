@@ -21,6 +21,13 @@ class PreProcess:
         }
 
     def fix_skew(self, target, cols):
+        """
+        fix data skewness
+
+        Args:
+            target (string): name of column (target to predict) to drop whilst evaluating skewness
+            cols (list): list of columns to apply the transformation to
+        """
         skew_feats = self.data.drop(target, axis=1).skew().sort_values(ascending=False)
         skewness = pd.DataFrame({'Skew': skew_feats})
         skewness = skewness[abs(skewness) > 0.5].dropna()
@@ -29,14 +36,30 @@ class PreProcess:
         self.data[skewed_columns] = self.transformers["skew"].transform(self.data[skewed_columns])
 
     def fix_null(self):
+        """
+        fix null values in input data
+
+        """
         pass
 
     def min_max_scaler(self, cols):
+        """
+        Scale the data in range of 0 to 1
+
+        Args:
+            cols (list): list of columns to apply the transformation to
+        """
         self.transformers["min_max_scaler"].fit(self.data[cols].values)
         scaled_cols = self.transformers["min_max_scaler"].transform(self.data[cols].values)
         self.data[cols] = scaled_cols
 
     def standard_scaler(self, cols):
+        """
+        Standardize the numeric data to have zero mean and standard deviation of 1
+
+        Args:
+            cols (): list of columns to apply the transformation to
+        """
         scaler = StandardScaler()
         scaler.fit(self.data[cols].values)
         scaled_cols = scaler.transform(self.data[cols].values)
@@ -45,12 +68,30 @@ class PreProcess:
         self.data[cols] = scaled_cols
 
     def label_encode(self, cols):
+        """
+        Apply label encoding to categorical data
+
+        Args:
+            cols (): list of columns to apply the transformation to
+        """
         self.data[cols] = self.data[cols].apply(lambda col: self.transformers["label_encoder"].fit_transform(col))
 
     def one_hot_encode(self, cols):
+        """
+        Apply one hot encoding to categorical data
+
+        Args:
+            cols (): list of columns to apply the transformation to
+        """
         # self.data[cols] = self.data[cols].apply(lambda col: self.transformers["one_hot_encoder"].fit_transform(col))
         self.data = pd.get_dummies(self.data, columns=cols)
 
-
     def fit_transform(self, transformation, cols):
+        """
+        function to fit the transformers to training data and transform training and test data
+
+        Args:
+            transformation (dict): transformations to apply to given list of columns
+            cols (list): list of columns to apply transformations to
+        """
         self.transformers[transformation](cols)
