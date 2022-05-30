@@ -26,7 +26,7 @@ class BuildModel:
         self.weights, self.bias = BuildModel.initialize_weights(self.n_features)
 
     def get_data(self):
-        return tuple(self.weights, self.bias, self.leaning_rate)
+        return tuple(self.weights, self.bias, self.learning_rate)
 
     model_data = property(set_data, get_data)
 
@@ -58,7 +58,8 @@ class BuildModel:
         return self
 
     def compute_cost(self):
-        print("Target shape")
+        print("predictions shape: ", self.predictions.shape)
+        print("target shape: ", self.target.shape)
         epsilon = 1e-5
         cost = np.sum(
             (self.target * np.log(self.predictions + epsilon))
@@ -69,12 +70,14 @@ class BuildModel:
 
     def compute_grad(self):
         d_activations = self.predictions - self.target
+        print("d_activations shape", d_activations.shape)
         d_weights = (1 / self.n_examples) * (np.dot(self.data.T, d_activations))
         d_bias = (1 / self.n_examples) * np.sum(d_activations)
         self.grads = {"d_weights": d_weights, "d_bias": d_bias}
         return self
 
-    def update_params(self, grads):
-        self.weights = self.weights - (self.leaning_rate * self.grads["d_weights"])
-        self.bias = self.bias - (self.leaning_rate * self.grads["d_weights"])
+    def update_params(self):
+        print("Grads Shape: ", self.grads["d_weights"].shape)
+        self.weights = self.weights - (self.learning_rate * self.grads["d_weights"])
+        self.bias = self.bias - (self.learning_rate * self.grads["d_weights"])
         return self

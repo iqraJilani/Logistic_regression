@@ -20,7 +20,6 @@ class PreProcess:
             "power_transformer": PowerTransformer()
         }
 
-
     def fix_skew(self, target, cols):
         skew_feats = self.data.drop(target, axis=1).skew().sort_values(ascending=False)
         skewness = pd.DataFrame({'Skew': skew_feats})
