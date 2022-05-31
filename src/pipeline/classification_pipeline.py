@@ -1,11 +1,13 @@
 from src.dataloader.pre_processing import PreProcess
-from src.model.build_model import BuildModel
+from src.model.model import Model
+from src.model.logistic_regression_model import LogisticRegression
+from src.model.neural_network_model import NeuralNetwork
 from src.dataloader.loader import Loader
 
 
-class RegressionPipeline:
+class ClassificationPipeline:
 
-    def __init__(self, path, name, target):
+    def __init__(self, path, name, target, model_type):
         self.path = path
         self.name = name
         self.target = target
@@ -14,7 +16,11 @@ class RegressionPipeline:
         self.X_test = None
         self.X_train = None
         self.learning_rate = None
-        self.model_obj = BuildModel()
+        if model_type == "logistic":
+            self.model_obj = LogisticRegression()
+        else:
+            self.model_obj = NeuralNetwork()
+
 
     def pre_processing(self, transformations):
         """
@@ -42,7 +48,7 @@ class RegressionPipeline:
         self.learning_rate = learning_rate
         self.model_obj.set_data(self.learning_rate, self.X_train, self.y_train)
         for i in range(0, num_iter):
-            cost_train = self.model_obj.predict().compute_cost()
+            cost_train = self.model_obj.forward_pass().compute_cost()
             self.model_obj.compute_grad().update_params()
             print(f"Training cost in iteration {i} is: {cost_train}")
         return cost_train
