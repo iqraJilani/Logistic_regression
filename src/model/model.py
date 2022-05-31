@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class BuildModel:
+class Model:
     def __init__(self):
         self.grads = None
         self.bias = None
@@ -28,24 +28,7 @@ class BuildModel:
         self.target = target
         self.data = data
         self.n_examples, self.n_features = self.data.shape
-        self.weights, self.bias = BuildModel.initialize_weights(self.n_features)
-
-    @staticmethod
-    def initialize_weights(n_features):
-        """
-        Random initialization of weights matrix
-
-        Args:
-            n_features (int): no of features of input data, first dimension of weight matrix
-
-        Returns:
-            float- numpy matrix: matrix of weights initialized with random float numbers
-
-
-        """
-        weights = np.random.randn(n_features, 1)
-        bias = 0
-        return weights, bias
+        self.weights, self.bias = Model.initialize_weights(self.n_features)
 
     @staticmethod
     def custom_sigmoid(activations):
@@ -85,21 +68,6 @@ class BuildModel:
         linear_activations = np.dot(data, weights)
         return linear_activations
 
-    def predict(self, ):
-        """
-        calculate predictions for target variable using input data and weights
-
-        Returns:
-            object: self, model object
-
-        """
-        activations = self.linear_forward(self.data, self.weights)
-        probabilities = self.custom_sigmoid(activations)
-        predictions = self.custom_softmax(probabilities)
-        self.predictions = predictions
-        print("predictions shape", self.predictions.shape)
-        return self
-
     def compute_cost(self):
         """
         calculate cost according to logistic regression formula
@@ -117,21 +85,6 @@ class BuildModel:
         )
         cost = -(1 / self.n_examples) * cost
         return cost
-
-    def compute_grad(self):
-        """
-        compute gradients for gradient descend of optimization of cost on training data
-
-        Returns:
-            object: self, model object
-
-        """
-        d_activations = self.predictions - self.target
-        print("d_activations shape", d_activations.shape)
-        d_weights = (1 / self.n_examples) * (np.dot(self.data.T, d_activations))
-        d_bias = (1 / self.n_examples) * np.sum(d_activations)
-        self.grads = {"d_weights": d_weights, "d_bias": d_bias}
-        return self
 
     def update_params(self):
         """

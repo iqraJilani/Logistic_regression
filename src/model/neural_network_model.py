@@ -1,8 +1,8 @@
 import numpy as np
-from build_model import BuildModel
+from model import Model
 
 
-class BuildNeuralNetwork(BuildModel):
+class NeuralNetwork(Model):
     def __init__(self, n_layers, n_nodes):
         self.n_layers = n_layers
         self.n_nodes = n_nodes
@@ -10,9 +10,9 @@ class BuildNeuralNetwork(BuildModel):
         super().__init__()
 
     def set_data(self, learning_rate, data, target):
-        super(BuildNeuralNetwork, self.__class__).class_data.fset(self, learning_rate, data, target)
+        super(NeuralNetwork, self.__class__).class_data.fset(self, learning_rate, data, target)
         self.n_nodes = list([self.n_features]) + self.n_nodes
-        self.weights, self.bias = BuildNeuralNetwork.initialize_weights(self.n_examples, self.n_nodes, self.n_layers)
+        self.weights, self.bias = NeuralNetwork.initialize_weights(self.n_examples, self.n_nodes, self.n_layers)
 
     def get_data(self):
         return tuple(self.weights, self.bias, self.learning_rate)
