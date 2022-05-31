@@ -18,17 +18,17 @@ class BuildModel:
         #     "leaning_rate": self.leaning_rate,
         # }
 
-    def set_data(self, learning_rate, data, target):
+    @property
+    def model_data(self):
+        return tuple(self.weights, self.bias, self.learning_rate)
+
+    @model_data.setter
+    def model_data(self, learning_rate, data, target):
         self.learning_rate = learning_rate
         self.target = target
         self.data = data
         self.n_examples, self.n_features = self.data.shape
         self.weights, self.bias = BuildModel.initialize_weights(self.n_features)
-
-    def get_data(self):
-        return tuple(self.weights, self.bias, self.learning_rate)
-
-    model_data = property(set_data, get_data)
 
     @staticmethod
     def initialize_weights(n_features):
@@ -80,6 +80,11 @@ class BuildModel:
         predictions = probability.astype(int)
         return predictions
 
+    @staticmethod
+    def linear_forward(data, weights):
+        linear_activations = np.dot(data, weights)
+        return linear_activations
+
     def predict(self, ):
         """
         calculate predictions for target variable using input data and weights
@@ -88,9 +93,9 @@ class BuildModel:
             object: self, model object
 
         """
-        activations = np.dot(self.data, self.weights)
-        probabilities = BuildModel.custom_sigmoid(activations)
-        predictions = BuildModel.custom_softmax(probabilities)
+        activations = self.linear_forward(self.data, self.weights)
+        probabilities = self.custom_sigmoid(activations)
+        predictions = self.custom_softmax(probabilities)
         self.predictions = predictions
         print("predictions shape", self.predictions.shape)
         return self
