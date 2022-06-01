@@ -93,6 +93,12 @@ class ClassificationPipeline:
         return cost_test
 
     def inference(self):
+        """
+        method to calculate inference on test data
+
+        Returns: numpy array: mx1 array of predictions
+
+        """
         predictions = self.model_obj.infer(self.data)
         return predictions
 
