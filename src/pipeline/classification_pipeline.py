@@ -103,6 +103,10 @@ class ClassificationPipeline:
         return predictions
 
     def save_hyperparameters(self):
+        """
+        saves trained parameters such as weights, bias and learning rate
+
+        """
         params = self.model_obj.model_data
         with open("../data/hyperparameters.pkl", 'wb') as f:
             pickle.dump(params, f)
