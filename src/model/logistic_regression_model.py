@@ -1,11 +1,13 @@
-from model import Model
+from .base_model import Model
 import numpy as np
 
 
 class LogisticRegression(Model):
 
-    @staticmethod
-    def initialize_weights(n_features):
+    def __init__(self):
+        super().__init__()
+
+    def initialize_weights(self):
         """
         Random initialization of weights matrix
 
@@ -17,11 +19,10 @@ class LogisticRegression(Model):
 
 
         """
-        weights = np.random.randn(n_features, 1)
-        bias = 0
-        return weights, bias
+        self.weights = np.random.randn(self.n_features, 1)
+        self.bias = 0
 
-    def forward_pass(self, ):
+    def forward_pass(self ):
         """
         calculate predictions for target variable using input data and weights
 
@@ -36,7 +37,7 @@ class LogisticRegression(Model):
         print("predictions shape", self.predictions.shape)
         return self
 
-    def compute_grad(self):
+    def back_prop(self):
         """
         compute gradients for gradient descend of optimization of cost on training data
 
@@ -51,4 +52,20 @@ class LogisticRegression(Model):
         self.grads = {"d_weights": d_weights, "d_bias": d_bias}
         return self
 
+    def update_params(self):
+        """
+        update the weights using the gradients computed for successive steps of gradient descend
 
+        Returns:
+            object: self, model object
+
+        """
+        print("Grads Shape: ", self.grads["d_weights"].shape)
+        self.weights = self.weights - (self.learning_rate * self.grads["d_weights"])
+        self.bias = self.bias - (self.learning_rate * self.grads["d_weights"])
+        return self
+
+    def infer(self, data):
+        self.data = data
+        self.forward_pass()
+        return self.predictions

@@ -1,39 +1,59 @@
 from src.dataloader.pre_processing import PreProcess
-from src.model.model import Model
+from src.model.base_model import Model
 from src.model.logistic_regression_model import LogisticRegression
 from src.model.neural_network_model import NeuralNetwork
-from src.dataloader.loader import Loader
+from sklearn.model_selection import train_test_split
+import pickle
 
 
 class ClassificationPipeline:
 
-    def __init__(self, path, name, target, model_type):
-        self.path = path
-        self.name = name
-        self.target = target
-        self.y_test = None
-        self.y_train = None
-        self.X_test = None
-        self.X_train = None
-        self.learning_rate = None
+    def __init__(self, model_type, learning_rate,  n_layers=2, n_nodes=[4, 1]):
+        self.target = None
+        self.data = None
+        self.data_train = None
+        self.data_test = None
+        self.target_train = None
+        self.target_test = None
+        self.learning_rate = learning_rate
+        self.costs = dict()
         if model_type == "logistic":
             self.model_obj = LogisticRegression()
-        else:
-            self.model_obj = NeuralNetwork()
+        elif model_type == "neural":
+            self.model_obj = NeuralNetwork(n_layers, n_nodes)
 
-
-    def pre_processing(self, transformations):
+    def pre_process(self, methods, data, target=None):
         """
-        Apply pre-processing to the data and split it into train/test or train/dev/test
+        Apply the transformations and other methods e.g., fix skew to the given columns
 
         Args:
-            transformations (dict): transformations to apply to given list of columns
+            target ():
+            data ():
+            methods (dict): transformations and other methods to apply to given list of columns
         """
-        loader = Loader(self.path, self.name, self.target)
-        loader.pre_process(transformations)
-        self.X_train, self.X_test, self.y_train, self.y_test = loader.split_data("default")
 
-    def train_model(self, learning_rate, num_iter):
+        self.target = target
+        pre_obj = PreProcess(data)
+        for transformation, cols in methods.items():
+            pre_obj.fit_transform(transformation, cols)
+        self.data = pre_obj.data
+
+    def split_data(self, split_method):
+        """
+        split the data into train/test or train/dev/test according to method given
+
+        Args:
+            split_method ():
+
+        Returns:
+            dataframes & arrays: sectioned data
+
+        """
+        if split_method == "default":
+            self.data_train, self.data_test, self.target_train, self.target_test = train_test_split(self.data, self.target, test_size=0.3)
+        return self
+
+    def train_model(self, num_iter):
         """
         train the model i.e., find weights that minimize training cost
 
@@ -45,15 +65,16 @@ class ClassificationPipeline:
             float: cost of training data, after all iterations.
 
         """
-        self.learning_rate = learning_rate
-        self.model_obj.set_data(self.learning_rate, self.X_train, self.y_train)
+        self.model_obj.user_data = [self.learning_rate, self.data_train, self.target_train]
+        self.model_obj.initialize_weights()
         for i in range(0, num_iter):
             cost_train = self.model_obj.forward_pass().compute_cost()
-            self.model_obj.compute_grad().update_params()
+            self.model_obj.back_prop().update_params()
             print(f"Training cost in iteration {i} is: {cost_train}")
-        return cost_train
+            self.costs[i] = cost_train
+        return cost_train, self.costs
 
-    def evaluate_model(self):
+    def evaluate_model(self, weights=None, bias=None, learning_rate=None, external_weights = False, evaluate_only=False):
         """
         evaluate the performance of model on testing data using trained weights
 
@@ -61,6 +82,37 @@ class ClassificationPipeline:
             float: cost on test data, computed using trained weights
 
         """
-        self.model_obj.set_data(self.learning_rate, self.X_test, self.y_test)
-        cost_test = self.model_obj.predict().compute_cost()
+        if evaluate_only:
+            self.model_obj.user_data = [self.learning_rate, self.self.data, self.target]
+        else:
+            self.model_obj.user_data = [self.learning_rate, self.self.data_test, self.target_test]
+
+        if external_weights:
+            self.model_obj.model_data = [weights, bias, learning_rate]
+        cost_test = self.model_obj.forward_pass().compute_cost()
         return cost_test
+
+    def inference(self):
+        predictions = self.model_obj.infer(self.data)
+        return predictions
+
+    def save_hyperparameters(self):
+        params = self.model_obj.model_data
+        with open("../data/hyperparameters.pkl", 'wb') as f:
+            pickle.dump(params, f)
+
+    def load_hyperparameters(self):
+
+        with open("../data/hyperparameters.pkl", 'rb') as f:
+            params = pickle.load(f)
+        weights = params["weights"]
+        bias = params["bias"]
+        learning_rate = params["learning_rate"]
+        return weights, bias, learning_rate
+
+
+
+
+
+
+
