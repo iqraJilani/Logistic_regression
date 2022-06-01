@@ -12,23 +12,34 @@ class Model:
         self.n_features = None
         self.n_examples = None
         self.learning_rate = None
-        # self.params = {
-        #     "weights": self.weights,
-        #     "bias": self.bias,
-        #     "leaning_rate": self.leaning_rate,
-        # }
+        self.params = {
+            "weights": self.weights,
+            "bias": self.bias,
+            "learning_rate": self.learning_rate
+        }
+
+
+    @property
+    def user_data(self):
+        return self.predictions
+
+    @user_data.setter
+    def user_data(self, data):
+        self.learning_rate = data[0]
+        self.data = data[1]
+        self.target = data[2]
+        self.n_examples, self.n_features = self.data.shape
+        print("user data set")
 
     @property
     def model_data(self):
-        return tuple(self.weights, self.bias, self.learning_rate)
+        return self.params
 
     @model_data.setter
-    def model_data(self, learning_rate, data, target):
-        self.learning_rate = learning_rate
-        self.target = target
-        self.data = data
-        self.n_examples, self.n_features = self.data.shape
-        self.weights, self.bias = Model.initialize_weights(self.n_features)
+    def model_data(self, data):
+        self.weights = data[0]
+        self.bias = data[1]
+        self.learning_rate = data[2]
 
     @staticmethod
     def custom_sigmoid(activations):
@@ -76,8 +87,8 @@ class Model:
             object: self, model object
 
         """
-        print("predictions shape: ", self.predictions.shape)
-        print("target shape: ", self.target.shape)
+        # print("predictions shape: ", self.predictions.shape)
+        # print("target shape: ", self.target.shape)
         epsilon = 1e-5
         cost = np.sum(
             (self.target * np.log(self.predictions + epsilon))
@@ -86,15 +97,4 @@ class Model:
         cost = -(1 / self.n_examples) * cost
         return cost
 
-    def update_params(self):
-        """
-        update the weights using the gradients computed for successive steps of gradient descend
 
-        Returns:
-            object: self, model object
-
-        """
-        print("Grads Shape: ", self.grads["d_weights"].shape)
-        self.weights = self.weights - (self.learning_rate * self.grads["d_weights"])
-        self.bias = self.bias - (self.learning_rate * self.grads["d_weights"])
-        return self
