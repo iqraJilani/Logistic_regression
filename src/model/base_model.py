@@ -71,8 +71,8 @@ class Model:
             numpy array: numpy array of 0 or 1 as predicted class of input examples
 
         """
-        probability[probability >= 0.7] = 1
-        probability[probability < 0.7] = 0
+        probability[probability >= 0.65] = 1
+        probability[probability < 0.65] = 0
         predictions = probability.astype(int)
         return predictions
 

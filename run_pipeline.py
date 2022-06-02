@@ -5,17 +5,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 transformations = {
-    "standard_scaler": ['RI', 'Na', 'Mg', 'Al', 'Si', 'K', 'Ca', 'Ba', 'Fe']
+    "min_max_scaler": ['x0', 'x1', 'x2', 'x3', 'x4']
 }
 data_path = "./data"
-file_name = "input.csv"
-target_var = "Type"
-model_type = "neural"
+file_name = "iris_data.csv"
+target_var = "type"
+model_type = "logistic"
 learning_rate = 0.03
-task = "inference"
-infer_data = np.array([[1.52101, 13.64, 4.49, 1.1, 71.78, 0.06, 8.75, 0, 0],
-                       [1.51926,	13.2,	3.33,	1.28,	72.36,	0.6,	9.14,	0,	0.11]
-                       ])
+task = "training and evaluation"
+infer_data = np.array([
+    [1,	5,	3.3,	1.4,	0.2,	0],
+    [1,	7,	3.2,	4.7,	1.4,	1]
+])
 external_weights = False
 split_size = 0.3
 
@@ -24,7 +25,7 @@ rg_pipeline = ClassificationPipeline(model_type, learning_rate)
 if task == "training and evaluation":
     loader = Loader(data_path, file_name, target_var)
     data, target = loader.load_data()
-    rg_pipeline.pre_processing(transformations, data, target).split_data("default")
+    rg_pipeline.pre_processing("fit_transform", transformations, data, target).split_data("default")
     cost_train, costs = rg_pipeline.train_model(400)
     rg_pipeline.save_hyperparameters()
     cost_test = rg_pipeline.evaluate_model()
@@ -33,22 +34,16 @@ if task == "training and evaluation":
     sns.lineplot(x=costs.keys(), y=costs.values())
     plt.show()
 
-elif task =="evaluate only":
+elif task == "evaluate only":
     loader = Loader(data_path, file_name, target_var)
     data, target = loader.load_data()
-    rg_pipeline.pre_processing(transformations, data, target)
+    rg_pipeline.pre_processing("transform", transformations, data, target)
     weights, bias, learning_rate = rg_pipeline.load_hyperparameters()
     cost_test = rg_pipeline.evaluate_model(weights, bias, learning_rate, external_weights=True, evaluate_only=True)
     print(f"This model's testing performance is {cost_test}")
 
 elif task == "inference":
-    #rg_pipeline.pre_processing(transformations, data=infer_data)
+    #rg_pipeline.pre_processing(transformations, infer_data, "transform")
     weights, bias, learning_rate = rg_pipeline.load_hyperparameters()
     predictions = rg_pipeline.inference(infer_data, weights, bias, learning_rate)
-
-
-
-
-
-
-
+    print([predictions])

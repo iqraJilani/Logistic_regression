@@ -11,7 +11,7 @@ import pickle
 
 class ClassificationPipeline:
 
-    def __init__(self, model_type, learning_rate,  n_layers=2, n_nodes=[4, 1]):
+    def __init__(self, model_type, learning_rate,  n_layers=2, n_nodes=[3, 1]):
         self.target = None
         self.data = None
         self.data_train = None
@@ -25,7 +25,7 @@ class ClassificationPipeline:
         elif model_type == "neural":
             self.model_obj = NeuralNetwork(n_layers, n_nodes)
 
-    def pre_processing(self, methods, data, target=None):
+    def pre_processing(self, task, transformations, data, target=None):
         """
         Apply the transformations and other methods e.g., fix skew to the given columns
 
@@ -35,12 +35,11 @@ class ClassificationPipeline:
             methods (dict): transformations and other methods to apply to given list of columns
         """
 
-        self.target = target
-        self.data
-        # pre_obj = PreProcess(data)
-        # for transformation, cols in methods.items():
-        #     pre_obj.fit_transform(transformation, cols)
-        # self.data = pre_obj.data
+        pre_obj = PreProcess(data)
+        pre_obj.fit_transform(transformations, task)
+        self.data = pre_obj.data
+
+
         return self
 
     def split_data(self, split_method):

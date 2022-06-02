@@ -32,7 +32,7 @@ class NeuralNetwork(Model):
             j = i - 1
             n_prev = self.n_nodes[j]
             n_current = self.n_nodes[i]
-            self.weights[i] = np.random.randn(n_prev, n_current) * 0.05
+            self.weights[i] = np.random.randn(n_prev, n_current) * 0.01
             self.bias[i] = np.zeros((1, n_current))
 
 
