@@ -12,8 +12,10 @@ file_name = "input.csv"
 target_var = "Type"
 model_type = "neural"
 learning_rate = 0.03
-task = "training and evaluation"
-infer_data = None
+task = "inference"
+infer_data = np.array([[1.52101, 13.64, 4.49, 1.1, 71.78, 0.06, 8.75, 0, 0],
+                       [1.51926,	13.2,	3.33,	1.28,	72.36,	0.6,	9.14,	0,	0.11]
+                       ])
 external_weights = False
 split_size = 0.3
 
@@ -22,7 +24,7 @@ rg_pipeline = ClassificationPipeline(model_type, learning_rate)
 if task == "training and evaluation":
     loader = Loader(data_path, file_name, target_var)
     data, target = loader.load_data()
-    rg_pipeline.pre_processing(transformations, data, target).split(split_size)
+    rg_pipeline.pre_processing(transformations, data, target).split_data("default")
     cost_train, costs = rg_pipeline.train_model(400)
     rg_pipeline.save_hyperparameters()
     cost_test = rg_pipeline.evaluate_model()
@@ -40,8 +42,11 @@ elif task =="evaluate only":
     print(f"This model's testing performance is {cost_test}")
 
 elif task == "inference":
-    rg_pipeline.pre_processing(transformations, data=infer_data)
-    predictions = rg_pipeline.inference()
+    #rg_pipeline.pre_processing(transformations, data=infer_data)
+    weights, bias, learning_rate = rg_pipeline.load_hyperparameters()
+    predictions = rg_pipeline.inference(infer_data, weights, bias, learning_rate)
+
+
 
 
 

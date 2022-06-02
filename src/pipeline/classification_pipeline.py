@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from src.dataloader.pre_processing import PreProcess
 from src.model.base_model import Model
 from src.model.logistic_regression_model import LogisticRegression
@@ -22,7 +25,7 @@ class ClassificationPipeline:
         elif model_type == "neural":
             self.model_obj = NeuralNetwork(n_layers, n_nodes)
 
-    def pre_process(self, methods, data, target=None):
+    def pre_processing(self, methods, data, target=None):
         """
         Apply the transformations and other methods e.g., fix skew to the given columns
 
@@ -33,10 +36,12 @@ class ClassificationPipeline:
         """
 
         self.target = target
-        pre_obj = PreProcess(data)
-        for transformation, cols in methods.items():
-            pre_obj.fit_transform(transformation, cols)
-        self.data = pre_obj.data
+        self.data
+        # pre_obj = PreProcess(data)
+        # for transformation, cols in methods.items():
+        #     pre_obj.fit_transform(transformation, cols)
+        # self.data = pre_obj.data
+        return self
 
     def split_data(self, split_method):
         """
@@ -51,6 +56,7 @@ class ClassificationPipeline:
         """
         if split_method == "default":
             self.data_train, self.data_test, self.target_train, self.target_test = train_test_split(self.data, self.target, test_size=0.3)
+            print(self.data_train.shape)
         return self
 
     def train_model(self, num_iter):
@@ -83,23 +89,25 @@ class ClassificationPipeline:
 
         """
         if evaluate_only:
-            self.model_obj.user_data = [self.learning_rate, self.self.data, self.target]
+            self.model_obj.user_data = [self.learning_rate, self.data, self.target]
         else:
-            self.model_obj.user_data = [self.learning_rate, self.self.data_test, self.target_test]
+            self.model_obj.user_data = [self.learning_rate, self.data_test, self.target_test]
 
         if external_weights:
             self.model_obj.model_data = [weights, bias, learning_rate]
         cost_test = self.model_obj.forward_pass().compute_cost()
         return cost_test
 
-    def inference(self):
+
+    def inference(self, data, weights, bias, learning_rate):
         """
         method to calculate inference on test data
 
         Returns: numpy array: mx1 array of predictions
 
         """
-        predictions = self.model_obj.infer(self.data)
+        self.model_obj.infer(data, weights, bias, learning_rate)
+        predictions = self.model_obj.user_data
         return predictions
 
     def save_hyperparameters(self):
@@ -108,12 +116,14 @@ class ClassificationPipeline:
 
         """
         params = self.model_obj.model_data
-        with open("../data/hyperparameters.pkl", 'wb') as f:
+        path = os.path.join(os.getcwd(), 'data/hyperparameters.pkl')
+        with open(path, 'wb') as f:
             pickle.dump(params, f)
 
     def load_hyperparameters(self):
 
-        with open("../data/hyperparameters.pkl", 'rb') as f:
+        path = os.path.join(os.getcwd(), 'data/hyperparameters.pkl')
+        with open(path, 'rb') as f:
             params = pickle.load(f)
         weights = params["weights"]
         bias = params["bias"]

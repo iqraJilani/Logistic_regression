@@ -20,6 +20,7 @@ class Loader:
         self.data = self.data.loc[:, self.data.columns != self.target_col]
         print("X shape: ", self.data.shape)
         print("Y shape: ", self.target.shape)
+        return self.data, self.target
 
 
 

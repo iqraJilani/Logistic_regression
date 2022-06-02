@@ -65,7 +65,8 @@ class LogisticRegression(Model):
         self.bias = self.bias - (self.learning_rate * self.grads["d_weights"])
         return self
 
-    def infer(self, data):
+    def infer(self, data, weights, bias, learning_rate):
+        super(LogisticRegression, self.__class__).model_data.fset(self, [weights, bias, learning_rate])
         self.data = data
         self.forward_pass()
-        return self.predictions
+

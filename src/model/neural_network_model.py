@@ -4,10 +4,10 @@ from .base_model import Model
 
 class NeuralNetwork(Model):
     def __init__(self, n_layers, n_nodes):
+        super().__init__()
         self.n_layers = n_layers
         self.n_nodes = n_nodes
         self.activations = dict()
-        super().__init__()
         self.grads = dict()
 
     def initialize_weights(self):
@@ -33,7 +33,8 @@ class NeuralNetwork(Model):
             n_prev = self.n_nodes[j]
             n_current = self.n_nodes[i]
             self.weights[i] = np.random.randn(n_prev, n_current) * 0.05
-            self.bias[i] = np.zeros((self.n_examples, n_current))
+            self.bias[i] = np.zeros((1, n_current))
+
 
     @staticmethod
     def custom_tanh(z):
@@ -42,14 +43,16 @@ class NeuralNetwork(Model):
 
     def forward_pass(self):
         self.activations[0] = self.data
+        #print("first activations' shape:  ", self.activations[0].shape)
+        #print("W1 shape:  ", super().weights[0].shape)
         for i in range(1, self.n_layers):
             j = i - 1
-            linear_activations = super().linear_forward(self.activations[j], self.weights[i])
+            linear_activations = Model.linear_forward(self.activations[j], self.weights[i])
             self.activations[i] = self.custom_tanh(linear_activations)
         j = self.n_layers - 1
-        linear_activations = super().linear_forward(self.activations[j], self.weights[self.n_layers])
-        self.activations[self.n_layers] = super().custom_sigmoid(linear_activations)
-        self.predictions = super().custom_softmax(self.activations[self.n_layers])
+        linear_activations = Model.linear_forward(self.activations[j], self.weights[self.n_layers])
+        self.activations[self.n_layers] = Model.custom_sigmoid(linear_activations)
+        self.predictions = Model.custom_softmax(self.activations[self.n_layers])
 
         return self
 
@@ -90,7 +93,9 @@ class NeuralNetwork(Model):
             self.bias[i] = self.bias[i] - (self.learning_rate * self.grads["d_bias"][i])
         return self
 
-    def infer(self, data):
+    def infer(self, data, weights, bias, learning_rate):
+        super(NeuralNetwork, self.__class__).model_data.fset(self, [weights, bias, learning_rate])
         self.data = data
         self.forward_pass()
-        return self.predictions
+
+

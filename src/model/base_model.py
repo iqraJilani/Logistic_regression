@@ -12,11 +12,7 @@ class Model:
         self.n_features = None
         self.n_examples = None
         self.learning_rate = None
-        self.params = {
-            "weights": self.weights,
-            "bias": self.bias,
-            "learning_rate": self.learning_rate
-        }
+        self.params = dict()
 
 
     @property
@@ -33,6 +29,11 @@ class Model:
 
     @property
     def model_data(self):
+        self.params = {
+            "weights": self.weights,
+            "bias": self.bias,
+            "learning_rate": self.learning_rate
+        }
         return self.params
 
     @model_data.setter
@@ -40,6 +41,7 @@ class Model:
         self.weights = data[0]
         self.bias = data[1]
         self.learning_rate = data[2]
+        print("model data set")
 
     @staticmethod
     def custom_sigmoid(activations):
