@@ -90,7 +90,7 @@ class PreProcess:
             cols (): list of columns to apply the transformation to
         """
         if self.task == "fit":
-            self.data[cols].apply(lambda col: self.transformers["label_encoder"].fit(col))
+           self.data[cols] = self.data[cols].apply(lambda col: self.transformers["label_encoder"].fit_transform(cols))
 
 
     def one_hot_encode(self, cols):
@@ -101,7 +101,7 @@ class PreProcess:
             cols (): list of columns to apply the transformation to
         """
         self.data[cols] = self.data[cols].apply(lambda col: self.transformers["one_hot_encoder"].fit_transform(col))
-        self.data = pd.get_dummies(self.data, columns=cols)
+        #self.data = pd.get_dummies(self.data, columns=cols)
 
     def fit_transform(self, transformations, task):
         """
