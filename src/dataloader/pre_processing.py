@@ -75,11 +75,11 @@ class PreProcess:
         if self.task == "fit":
             self.transformers["standard_scaler"][1].fit(self.data[cols].values)
         elif self.task == "transform":
-            scaled_cols = self.transformers["min_max_scaler"].transform(self.data[cols].values)
+            scaled_cols = self.transformers["standard_scaler"].transform(self.data[cols].values)
             self.data[cols] = scaled_cols
         elif self.task == "fit_transform":
-            self.transformers["min_max_scaler"][1].fit(self.data[cols].values)
-            scaled_cols = self.transformers["min_max_scaler"].transform(self.data[cols].values)
+            self.transformers["standard_scaler"][1].fit(self.data[cols].values)
+            scaled_cols = self.transformers["standard_scaler"].transform(self.data[cols].values)
             self.data[cols] = scaled_cols
 
     def label_encode(self, cols):
@@ -89,7 +89,9 @@ class PreProcess:
         Args:
             cols (): list of columns to apply the transformation to
         """
-        self.data[cols] = self.data[cols].apply(lambda col: self.transformers["label_encoder"].fit_transform(col))
+        if self.task == "fit":
+            self.data[cols].apply(lambda col: self.transformers["label_encoder"].fit(col))
+
 
     def one_hot_encode(self, cols):
         """
@@ -98,7 +100,7 @@ class PreProcess:
         Args:
             cols (): list of columns to apply the transformation to
         """
-        # self.data[cols] = self.data[cols].apply(lambda col: self.transformers["one_hot_encoder"].fit_transform(col))
+        self.data[cols] = self.data[cols].apply(lambda col: self.transformers["one_hot_encoder"].fit_transform(col))
         self.data = pd.get_dummies(self.data, columns=cols)
 
     def fit_transform(self, transformations, task):
