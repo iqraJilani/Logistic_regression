@@ -12,8 +12,6 @@ class PreProcess:
     def __init__(self, data):
         self.data = data
         self.task = None
-        self.num_cols = None
-        self.cat_cols = None
         self.transformers = {
             "null_values": self.fix_null,
             "skew": PowerTransformer(method='box-cox'),
@@ -55,30 +53,36 @@ class PreProcess:
         self.data[skewed_columns] = self.transformers["skew"].transform(self.data[skewed_columns])
 
     def process_num_cols(self, scaling, task):
+        print("Numeric columns being pre-processed")
         num_cols = self.data.select_dtypes(exclude=['object', 'datetime64']).columns
+        print(len(num_cols))
 
         if len(num_cols) < 1:
             return
-        if task == "fit" or "fit_transform":
+        elif task == "fit" or "fit_transform":
             scaler = self.transformers[scaling]
             scaler.fit(self.data[num_cols])
             self.data[num_cols] = scaler.transform(self.data[num_cols])
             self.save_encoders()
+            print("Data shape after numeric processing", self.data.shape)
         elif task == "transform":
             self.load_encoders()
             scaler = self.transformers[scaling]
             self.data[num_cols] = scaler.transform(self.data[num_cols])
 
+        print("Data shape after numeric processing", self.data.shape)
+
     def process_cat_cols(self, task):
+        print("Categorical columns being pre-processed")
         cat_cols = list(self.data.select_dtypes(include=['object']).columns)
-        print(cat_cols)
+        print(len(cat_cols))
         print(self.data[cat_cols[0]].shape)
         n_cat_cols = len(cat_cols)
 
         if len(cat_cols) < 1:
             return
 
-        if task == "fit" or "fit_transform":
+        elif task == "fit" or "fit_transform":
             for i in range(0, n_cat_cols):
                 self.transformers['label_encoder'].append(LabelEncoder().fit(self.data[cat_cols[i]]))
                 self.data[cat_cols[i]] = self.transformers['label_encoder'][i].transform(self.data[cat_cols[i]])
@@ -86,7 +90,11 @@ class PreProcess:
             encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
             encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
 
+            num_data = self.data.drop(cat_cols, axis=1)
+            self.data = pd.concat([num_data, encoded_data], axis=1)
+
             self.save_encoders()
+            print("Data shape after numeric processing", self.data.shape)
         elif task == "transform":
             self.load_encoders()
 
@@ -96,5 +104,8 @@ class PreProcess:
             encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
             encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
 
-        num_data = self.data.drop(cat_cols, axis=1)
-        self.data = pd.concat([num_data, encoded_data], axis=1)
+            num_data = self.data.drop(cat_cols, axis=1)
+            self.data = pd.concat([num_data, encoded_data], axis=1)
+
+            print("Data shape after numeric processing", self.data.shape)
+

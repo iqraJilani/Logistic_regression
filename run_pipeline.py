@@ -3,18 +3,28 @@ from src.dataloader.loader import Loader
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
 
 scaling = "min_max_scaler"
 data_path = "./data"
 file_name = "bank_data.csv"
 target_var = "approved"
-model_type = "logistic"
+model_type = "neural"
 learning_rate = 0.03
-task = "training and evaluation"
-infer_data = np.array([
-    [1,	5,	3.3,	1.4,	0.2,	0],
-    [1,	7,	3.2,	4.7,	1.4,	1]
+task = "evaluate only"
+test_data = np.array([
+[38,'admin','married','high.school','unknown','no','no','telephone','may','mon','165','2','999','0','nonexistent',1.1,93.994,-36.4,4.857,5191],
+[38,'technician','single','university.degree','no','no','yes','telephone','may','mon',20,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
+[31,'admin','divorced','high.school','no','no','no','telephone','may','mon',246,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
+[41,'management','married','basic.6y','no','no','no','telephone','may','mon',529,2,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
+[39,'admin','married','university.degree','no','yes','yes','telephone','may','mon',192,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
+[49,'technician','married','basic.9y','no','no','no','telephone','may','mon',1467,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191]
+
 ])
+
+infer_data = pd.DataFrame.from_records(test_data, index=[i for i in range(0, test_data.shape[0])], columns=['c'+str(i) for i in range(0, test_data.shape[1])])
+
+
 external_weights = False
 split_size = 0.3
 
@@ -42,7 +52,7 @@ elif task == "evaluate only":
     print(f"This model's testing performance is {cost_test}")
 
 elif task == "inference":
-    #rg_pipeline.pre_processing(transformations, infer_data, "transform")
+    rg_pipeline.pre_processing(scaling, "transform", infer_data)
     weights, bias, learning_rate = rg_pipeline.load_hyperparameters()
-    predictions = rg_pipeline.inference(infer_data, weights, bias, learning_rate)
+    predictions = rg_pipeline.inference(weights, bias, learning_rate)
     print([predictions])
