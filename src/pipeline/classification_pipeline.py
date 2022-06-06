@@ -42,6 +42,7 @@ class ClassificationPipeline:
         pre_obj.process_num_cols(scaling, task)
         pre_obj.process_cat_cols(task)
         self.data = pre_obj.data
+        print("Data shape after pre-processing", self.data.shape)
 
 
     def split_data(self, split_method):
@@ -100,14 +101,14 @@ class ClassificationPipeline:
         return cost_test
 
 
-    def inference(self, data, weights, bias, learning_rate):
+    def inference(self, weights, bias, learning_rate):
         """
         method to calculate inference on test data
 
         Returns: numpy array: mx1 array of predictions
 
         """
-        self.model_obj.infer(data, weights, bias, learning_rate)
+        self.model_obj.infer(self.data, weights, bias, learning_rate)
         predictions = self.model_obj.user_data
         return predictions
 
