@@ -18,7 +18,7 @@ class PreProcess:
             "null_values": self.fix_null,
             "skew": PowerTransformer(method='box-cox'),
             "label_encoder": list(),
-            "one_hot_encoder": OneHotEncoder(),
+            "one_hot_encoder": OneHotEncoder(sparse=False),
             "min_max_scaler": MinMaxScaler(),
             "standard_scaler": StandardScaler()
         }
@@ -57,7 +57,7 @@ class PreProcess:
     def process_num_cols(self, scaling, task):
         num_cols = self.data.select_dtypes(exclude=['object', 'datetime64']).columns
 
-        if len(num_cols) <1:
+        if len(num_cols) < 1:
             return
         if task == "fit" or "fit_transform":
             scaler = self.transformers[scaling]
@@ -82,18 +82,9 @@ class PreProcess:
             for i in range(0, n_cat_cols):
                 self.transformers['label_encoder'].append(LabelEncoder().fit(self.data[cat_cols[i]]))
                 self.data[cat_cols[i]] = self.transformers['label_encoder'][i].transform(self.data[cat_cols[i]])
-
-            # self.transformers['one_hot_encoder'].fit(self.data[cat_cols])
-            # self.data[cat_cols] = self.transformers['one_hot_encoder'].transform(self.data[cat_cols])
-
-            # scaler1 = self.transformers["label_encoder"]
-            # scaler2 = self.transformers["one_hot_encoder"]
-            #
-            # scaler1.fit(self.data[cat_cols])
-            # self.data[cat_cols] = scaler1.transform(self.data[cat_cols])
-            #
-            # scaler2.fit(self.data[cat_cols])
-            # self.data = scaler2.transform(self.data[cat_cols])
+            self.transformers['one_hot_encoder'].fit(self.data[cat_cols])
+            encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
+            encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
 
             self.save_encoders()
         elif task == "transform":
@@ -102,15 +93,8 @@ class PreProcess:
             for i in range(0, n_cat_cols):
                 self.data[cat_cols[i]] = self.transformers['label_encoder'][i].transform(self.data[cat_cols[i]])
 
-            # self.data[cat_cols] = self.transformers['one_hot_encoder'].transform(self.data[cat_cols])
+            encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
+            encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
 
-            # scaler1 = self.transformers["label_encoder"]
-            # scaler2 = self.transformers["one_hot_encoder"]
-            #
-            # self.data[cat_cols] = scaler1.transform(self.data[cat_cols])
-            # self.data = scaler2.transform(self.data[cat_cols])
-
-
-
-
-
+        num_data = self.data.drop(cat_cols, axis=1)
+        self.data = pd.concat([num_data, encoded_data], axis=1)
