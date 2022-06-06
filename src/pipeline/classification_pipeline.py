@@ -25,22 +25,24 @@ class ClassificationPipeline:
         elif model_type == "neural":
             self.model_obj = NeuralNetwork(n_layers, n_nodes)
 
-    def pre_processing(self, task, transformations, data, target=None):
+    def pre_processing(self, scaling, task, data, target=None):
         """
         Apply the transformations and other methods e.g., fix skew to the given columns
 
         Args:
+            scaling ():
             target ():
             data ():
             methods (dict): transformations and other methods to apply to given list of columns
         """
+        self.target = target
 
         pre_obj = PreProcess(data)
-        pre_obj.fit_transform(transformations, task)
+        #pre_obj.fix_skew()
+        pre_obj.process_num_cols(scaling, task)
+        pre_obj.process_cat_cols(task)
         self.data = pre_obj.data
 
-
-        return self
 
     def split_data(self, split_method):
         """

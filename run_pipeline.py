@@ -4,12 +4,10 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-transformations = {
-    "min_max_scaler": ['x0', 'x1', 'x2', 'x3', 'x4']
-}
+scaling = "min_max_scaler"
 data_path = "./data"
-file_name = "iris_data.csv"
-target_var = "type"
+file_name = "bank_data.csv"
+target_var = "approved"
 model_type = "logistic"
 learning_rate = 0.03
 task = "training and evaluation"
@@ -25,7 +23,8 @@ rg_pipeline = ClassificationPipeline(model_type, learning_rate)
 if task == "training and evaluation":
     loader = Loader(data_path, file_name, target_var)
     data, target = loader.load_data()
-    rg_pipeline.pre_processing("fit_transform", transformations, data, target).split_data("default")
+    rg_pipeline.pre_processing(scaling, "fit_transform", data, target)
+    rg_pipeline.split_data("default")
     cost_train, costs = rg_pipeline.train_model(400)
     rg_pipeline.save_hyperparameters()
     cost_test = rg_pipeline.evaluate_model()
@@ -37,7 +36,7 @@ if task == "training and evaluation":
 elif task == "evaluate only":
     loader = Loader(data_path, file_name, target_var)
     data, target = loader.load_data()
-    rg_pipeline.pre_processing("transform", transformations, data, target)
+    rg_pipeline.pre_processing(scaling, "transform", data, target)
     weights, bias, learning_rate = rg_pipeline.load_hyperparameters()
     cost_test = rg_pipeline.evaluate_model(weights, bias, learning_rate, external_weights=True, evaluate_only=True)
     print(f"This model's testing performance is {cost_test}")
