@@ -1,9 +1,10 @@
-from src.pipeline.classification_pipeline import ClassificationPipeline
-from src.dataloader.loader import Loader
-import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
+
+from src.pipeline.classification_pipeline import ClassificationPipeline
+from src.dataloader.loader import Loader
+
 
 scaling = "min_max_scaler"
 data_path = "./data"
@@ -13,22 +14,8 @@ model_type = "neural"
 learning_rate = 0.07
 task = "inference"
 
-# k = ['k', 'job', 'marital', 'education', 'default', 'housing', 'loan',
-#        'contact', 'month', 'day_of_week', 'duration', 'campaign', 'pdays',
-#        'previous', 'poutcome', 'emp.var.rate', 'cons.price.idx',
-#        'cons.conf.idx', 'euribor3m', 'nr.employed']
-# vals = [
-#     [38,'admin','married','high.school','unknown','no','no','telephone','may','mon',165,2,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
-#     [49,'entrepreneur','married','university.degree','unknown','yes','no','telephone','may','mon',1042,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
-#     [38,'technician','single','university.degree','no','no','yes','telephone','may','mon',20,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
-#     [31,'admin','divorced','high.school','no','no','no','telephone','may','mon',246,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
-#     [41,'management','married','basic.6y','no','no','no','telephone','may','mon',529,2,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
-#     [39,'admin','married','university.degree','no','yes','yes','telephone','may','mon',192,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191],
-#     [49,'technician','married','basic.9y','no','no','no','telephone','may','mon',1467,1,999,0,'nonexistent',1.1,93.994,-36.4,4.857,5191]
-# ]
-#
-# infer_data = pd.DataFrame(dict(zip(k, vals)))
-dd = {
+# data dict for inference, to be converted to use of json here
+data_dict = {
     'k': [38,49],
     'job': ['admin.', 'entrepreneur'],
     'marital': ['married', 'married'],
@@ -50,10 +37,9 @@ dd = {
     'euribor3m': [4.857,4.857],
     'nr.employed': [5191, 5191]
 }
-#infer_data = pd.DataFrame(test_data, index=[i for i in range(0, test_data.shape[0])], columns=['c'+str(i) for i in range(0, test_data.shape[1])])
-#print(infer_data.dtypes)
 
-infer_data = pd.DataFrame(dd)
+
+infer_data = pd.DataFrame(data_dict)
 
 rg_pipeline = ClassificationPipeline(model_type, learning_rate)
 

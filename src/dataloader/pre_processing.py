@@ -1,11 +1,12 @@
-import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import PowerTransformer
 import os
 import pickle
+import pandas as pd
+
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import PowerTransformer
+from sklearn.preprocessing import StandardScaler
 
 
 class PreProcess:
@@ -69,7 +70,7 @@ class PreProcess:
         if len(num_cols) < 1:
             return
 
-        if len(cat_cols)<1:
+        if len(cat_cols) < 1:
             return
 
         self.transformers[scaling] = self.transformers[scaling].fit(self.data[num_cols])
@@ -113,5 +114,3 @@ class PreProcess:
 
         num_data = self.data.drop(cat_cols, axis=1)
         self.data = pd.concat([num_data, encoded_data], axis=1)
-
-

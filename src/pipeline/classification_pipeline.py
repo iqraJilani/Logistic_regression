@@ -1,12 +1,10 @@
 import os
-from pathlib import Path
+import pickle
+from sklearn.model_selection import train_test_split
 
-from src.dataloader.pre_processing import PreProcess
-from src.model.base_model import Model
 from src.model.logistic_regression_model import LogisticRegression
 from src.model.neural_network_model import NeuralNetwork
-from sklearn.model_selection import train_test_split
-import pickle
+from src.dataloader.pre_processing import PreProcess
 
 
 class ClassificationPipeline:
