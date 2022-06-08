@@ -1,17 +1,24 @@
-import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import PowerTransformer
 import os
 import pickle
+import pandas as pd
+
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import PowerTransformer
+from sklearn.preprocessing import StandardScaler
 
 
 class PreProcess:
     def __init__(self, data):
         self.data = data
         self.task = None
+        self.categories = None
+        print(self.data.columns)
+        self.dtypes = self.data.dtypes
+        self.transformers = None
+
+    def set_transformers(self):
         self.transformers = {
             "null_values": self.fix_null,
             "skew": PowerTransformer(method='box-cox'),
@@ -22,12 +29,14 @@ class PreProcess:
         }
 
     def save_encoders(self):
-        with open(os.path.join(os.getcwd(), 'data/transformers.pkl'), 'wb') as f:
+        with open(os.path.join(os.getcwd(), 'data/encoders.pkl'), 'wb') as f:
             pickle.dump(self.transformers, f)
 
     def load_encoders(self):
-        with open(os.path.join(os.getcwd(), 'data/transformers.pkl'), 'rb') as f:
+        with open(os.path.join(os.getcwd(), 'data/encoders.pkl'), 'rb') as f:
             self.transformers = pickle.load(f)
+        print("saved encoders loaded")
+        print(self.transformers)
 
     def fix_null(self):
         """
@@ -52,60 +61,56 @@ class PreProcess:
         self.transformers["skew"].fit(self.data[skewed_columns])
         self.data[skewed_columns] = self.transformers["skew"].transform(self.data[skewed_columns])
 
-    def process_num_cols(self, scaling, task):
-        print("Numeric columns being pre-processed")
+    def fit_transform(self, scaling):
+        self.set_transformers()
         num_cols = self.data.select_dtypes(exclude=['object', 'datetime64']).columns
-        print(len(num_cols))
+        cat_cols = list(self.data.select_dtypes(include=['object']).columns)
+        n_cat_cols = len(cat_cols)
 
         if len(num_cols) < 1:
             return
-        elif task == "fit" or "fit_transform":
-            scaler = self.transformers[scaling]
-            scaler.fit(self.data[num_cols])
-            self.data[num_cols] = scaler.transform(self.data[num_cols])
-            self.save_encoders()
-            print("Data shape after numeric processing", self.data.shape)
-        elif task == "transform":
-            self.load_encoders()
-            scaler = self.transformers[scaling]
-            self.data[num_cols] = scaler.transform(self.data[num_cols])
-
-        print("Data shape after numeric processing", self.data.shape)
-
-    def process_cat_cols(self, task):
-        print("Categorical columns being pre-processed")
-        cat_cols = list(self.data.select_dtypes(include=['object']).columns)
-        print(len(cat_cols))
-        print(self.data[cat_cols[0]].shape)
-        n_cat_cols = len(cat_cols)
 
         if len(cat_cols) < 1:
             return
 
-        elif task == "fit" or "fit_transform":
-            for i in range(0, n_cat_cols):
-                self.transformers['label_encoder'].append(LabelEncoder().fit(self.data[cat_cols[i]]))
-                self.data[cat_cols[i]] = self.transformers['label_encoder'][i].transform(self.data[cat_cols[i]])
-            self.transformers['one_hot_encoder'].fit(self.data[cat_cols])
-            encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
-            encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
+        self.transformers[scaling] = self.transformers[scaling].fit(self.data[num_cols])
+        self.data[num_cols] = self.transformers[scaling].transform(self.data[num_cols])
 
-            num_data = self.data.drop(cat_cols, axis=1)
-            self.data = pd.concat([num_data, encoded_data], axis=1)
+        for i in range(0, n_cat_cols):
+            self.transformers['label_encoder'].append(LabelEncoder().fit(self.data[cat_cols[i]]))
+            self.data[cat_cols[i]] = self.transformers['label_encoder'][i].transform(self.data[cat_cols[i]])
+        self.transformers['one_hot_encoder'] = self.transformers['one_hot_encoder'].fit(self.data[cat_cols])
+        encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
+        encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
 
-            self.save_encoders()
-            print("Data shape after numeric processing", self.data.shape)
-        elif task == "transform":
-            self.load_encoders()
+        num_data = self.data.drop(cat_cols, axis=1)
+        self.data = pd.concat([num_data, encoded_data], axis=1)
 
-            for i in range(0, n_cat_cols):
-                self.data[cat_cols[i]] = self.transformers['label_encoder'][i].transform(self.data[cat_cols[i]])
+        self.save_encoders()
 
-            encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
-            encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
+    def transform(self, scaling):
+        self.load_encoders()
 
-            num_data = self.data.drop(cat_cols, axis=1)
-            self.data = pd.concat([num_data, encoded_data], axis=1)
+        print(self.transformers['min_max_scaler'].__dict__)
+        print("encoder categories in inference", self.transformers['one_hot_encoder'].categories_)
 
-            print("Data shape after numeric processing", self.data.shape)
+        num_cols = self.data.select_dtypes(exclude=['object', 'datetime64']).columns
+        cat_cols = list(self.data.select_dtypes(include=['object']).columns)
+        n_cat_cols = len(cat_cols)
 
+        if len(num_cols) < 1:
+            return
+
+        if len(cat_cols) < 1:
+            return
+
+        self.data[num_cols] = self.transformers[scaling].transform(self.data[num_cols])
+
+        for i in range(0, n_cat_cols):
+            self.data[cat_cols[i]] = self.transformers['label_encoder'][i].transform(self.data[cat_cols[i]])
+
+        encoded_data = pd.DataFrame(self.transformers['one_hot_encoder'].transform(self.data[cat_cols]))
+        encoded_data.columns = self.transformers['one_hot_encoder'].get_feature_names()
+
+        num_data = self.data.drop(cat_cols, axis=1)
+        self.data = pd.concat([num_data, encoded_data], axis=1)

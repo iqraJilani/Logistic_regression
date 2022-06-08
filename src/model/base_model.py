@@ -14,7 +14,6 @@ class Model:
         self.learning_rate = None
         self.params = dict()
 
-
     @property
     def user_data(self):
         return self.predictions
@@ -98,5 +97,3 @@ class Model:
         )
         cost = -(1 / self.n_examples) * cost
         return cost
-
-

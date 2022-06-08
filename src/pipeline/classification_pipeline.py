@@ -1,17 +1,15 @@
 import os
-from pathlib import Path
+import pickle
+from sklearn.model_selection import train_test_split
 
-from src.dataloader.pre_processing import PreProcess
-from src.model.base_model import Model
 from src.model.logistic_regression_model import LogisticRegression
 from src.model.neural_network_model import NeuralNetwork
-from sklearn.model_selection import train_test_split
-import pickle
+from src.dataloader.pre_processing import PreProcess
 
 
 class ClassificationPipeline:
 
-    def __init__(self, model_type, learning_rate,  n_layers=2, n_nodes=[3, 1]):
+    def __init__(self, model_type, learning_rate,  n_layers=2, n_nodes=[4, 1]):
         self.target = None
         self.data = None
         self.data_train = None
@@ -24,6 +22,9 @@ class ClassificationPipeline:
             self.model_obj = LogisticRegression()
         elif model_type == "neural":
             self.model_obj = NeuralNetwork(n_layers, n_nodes)
+
+
+
 
     def pre_processing(self, scaling, task, data, target=None):
         """
@@ -39,8 +40,11 @@ class ClassificationPipeline:
 
         pre_obj = PreProcess(data)
         #pre_obj.fix_skew()
-        pre_obj.process_num_cols(scaling, task)
-        pre_obj.process_cat_cols(task)
+        if task == "fit_transform":
+            pre_obj.fit_transform(scaling)
+        else:
+            pre_obj.transform(scaling)
+
         self.data = pre_obj.data
         print("Data shape after pre-processing", self.data.shape)
 
